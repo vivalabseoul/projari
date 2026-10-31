@@ -6,12 +6,48 @@
 > 프로토타입입니다. 실제 로그인·결제·저장은 동작하지 않으며, 화면의 매장·금액은 모두 예시 데이터입니다.
 
 ## 실행
-별도 빌드 없이 `index.html`을 브라우저로 열면 됩니다. 정적 호스팅(GitHub Pages 등)에 그대로 올릴 수 있습니다.
+빌드 없이 `index.html`(사이트)이나 `admin.html`(관리자)을 브라우저로 열면 됩니다. GitHub Pages 같은 정적 호스팅에 폴더째 올리면 됩니다.
 
-| 파일 | 내용 |
+| 주소 | 화면 |
 |---|---|
-| `index.html` | 전체 화면 (HTML·CSS·JS 한 파일) |
-| `salon.jpg`, `salon2.jpg`, `salon3.jpg` | 예시 매장 사진 |
+| `index.html` | 사이트 홈 |
+| `admin.html` | 관리자 (자격 인증부터 시작) |
+| `index.html#admin-pay` | 관리자 입금·정산으로 바로 열기 (`#역할-탭` 형식) |
+
+## 폴더 구조
+```
+index.html            사이트 진입점
+admin.html            관리자 진입점
+css/style.css         전체 스타일
+images/               예시 매장 사진
+js/
+  config.js           ★ 정책 설정 (수수료·프로모션·사진 제한·업종별 이용 기준)
+  data.js             예시 데이터 (매장·계약·예약·인증)
+  state.js            화면 상태
+  utils.js            금액·날짜 계산 등 공통 함수
+  router.js           메뉴(NAV), 화면 등록(PAGES), 주소(#역할-탭) 처리
+  auth.js             회원가입·로그인 (프로토타입)
+  payment.js          결제 확인 창
+  photos.js           매장 사진 업로드 (5장, 장당 100KB 자동 축소)
+  events.js           클릭·입력·제출 처리
+  main.js             시작
+  pages/
+    home.js           홈, 마이, FAQ, 푸터
+    hostcenter.js     원장님 소개 (호스트센터)
+    guide.js          이용 안내
+    host.js           원장님: 대시보드·월세 관리·입점 요청·정산 내역·공간 등록
+    reviews.js        후기
+    guest.js          디자이너: 공간 찾기·상세·내 예약
+    admin/
+      verify.js       관리자: 자격·신고증 인증
+      payments.js     관리자: 입금·정산 (입금 확인 / 정산 확인 / 대사)
+      ops.js          관리자: 운영 현황
+```
+
+### 관리자 화면 추가하는 법 (예: 회원 관리)
+1. `js/pages/admin/members.js` 만들기 → `function adminMembers(){ return \`...\`; }` 와 `PAGES.admin.members=()=>adminMembers();`
+2. `js/router.js`의 `NAV.admin`에 `['members','회원 관리']` 한 줄 추가
+3. `index.html`, `admin.html`의 script 목록에 `<script src="js/pages/admin/members.js"></script>` 추가 (`js/main.js` 앞)
 
 ## 화면 구성
 - **홈 / 호스트센터**: 원장님 대상 소개, 이용 안내, FAQ
@@ -19,7 +55,7 @@
 - **디자이너(게스트)**: 공간 찾기, 상세(일·월·년 선택, 기본 일 단위), 내 예약
 - **관리자**: 자격·신고증 인증, 입금·정산(입금 확인 / 정산 확인 / 대사 분리), 운영 현황
 
-## 정책 설정 (index.html 상단 `CONFIG` 한 곳에서 변경)
+## 정책 설정 (`js/config.js`의 `CONFIG` 한 곳에서 변경)
 | 항목 | 현재 값 (가안) |
 |---|---|
 | 플랫폼 수수료 | 일 7%, 월 8%, 년 8% (월세+운영료 기준, 보증금 0%) |
@@ -27,7 +63,7 @@
 | 보증금 | 가상계좌로 수납 → 입주 확인 후 원장님께 전달, 반환은 원장님 직접 |
 | 매장 사진 | 최대 5장, 장당 100KB |
 
-업종별 이용 기준(매장 기기 / 디자이너 직접 준비 / 유의사항)은 `TYPE_RULES` 한 곳에서 관리합니다.
+업종별 이용 기준(매장 기기 / 디자이너 직접 준비 / 유의사항)은 `js/config.js`의 `TYPE_RULES` 한 곳에서 관리합니다.
 
 ## 정산 공식
 ```

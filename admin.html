@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>프로체어 관리자</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="adbar" role="region" aria-label="공지 및 광고">
+    <div class="adbar-in">
+      <button class="ad-msg" data-go="intro:hostcenter"><span class="ad-tag">AD</span><span>원장님, 비어 있는 의자로 월세 받아보세요 · 등록비 없음</span></button>
+      <button class="ad-host" data-go="intro:hostcenter">호스트센터 ›</button>
+    </div>
+  </div>
+  <div class="top-in">
+    <button class="logo brand-btn" data-go="intro:home" aria-label="홈으로"><span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 3.5h8a1 1 0 0 1 1 1V11H7V4.5a1 1 0 0 1 1-1z"/><path d="M5 13h14v2.5H5z"/><path d="M12 15.5V19M8 20.5h8"/></svg></span><span id="brand">프로체어</span></button>
+    <div class="authbar" id="authbar"></div>
+  </div>
+  <div class="sub"><div class="sub-in" id="subnav"></div></div>
+</header>
+<main id="view"></main>
+<div class="demo"><nav class="roles demo-menu" id="demomenu" aria-label="화면 전환" hidden>
+  <p class="small muted" style="padding:2px 8px 6px">프로토타입 · 예시 데이터</p>
+  <button data-role="intro" aria-pressed="true">홈</button>
+  <button data-role="host" aria-pressed="false">호스트 화면</button>
+  <button data-role="guest" aria-pressed="false">게스트 화면</button>
+  <button data-role="admin" aria-pressed="false">관리자 화면</button>
+</nav><button class="demo-fab" data-demotoggle="1" aria-expanded="false" aria-controls="demomenu">DEMO</button></div>
+<nav class="bnav" aria-label="하단 메뉴">
+  <button data-go="intro:home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>홈</button>
+  <button data-go="guest:search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg>공간 찾기</button>
+  <button data-go="guest:mine"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>내 예약</button>
+  <button data-go="intro:hostcenter"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10l2-5h14l2 5M4 10v10h16V10M4 10h16"/></svg>호스트센터</button>
+  <button data-go="intro:my"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c1-4 4-6 8-6s7 2 8 6"/></svg>마이</button>
+</nav>
+<div id="layer"></div>
+<script>window.START={role:"admin",tab:"verify"};</script>
+<script src="js/config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/state.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/router.js"></script>
+<script src="js/pages/host.js"></script>
+<script src="js/pages/guest.js"></script>
+<script src="js/pages/reviews.js"></script>
+<script src="js/pages/admin/verify.js"></script>
+<script src="js/pages/admin/payments.js"></script>
+<script src="js/pages/admin/ops.js"></script>
+<script src="js/pages/home.js"></script>
+<script src="js/pages/hostcenter.js"></script>
+<script src="js/pages/guide.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/payment.js"></script>
+<script src="js/events.js"></script>
+<script src="js/photos.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
