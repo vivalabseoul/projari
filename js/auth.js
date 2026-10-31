@@ -14,9 +14,9 @@ const QUALS = [
 ];
 const qualTypes = qs => [...new Set(QUALS.filter(q=>qs.includes(q.k)).flatMap(q=>[q.type,...(q.also||[])]))];
 const qualLabels = qs => QUALS.filter(q=>qs.includes(q.k)).map(q=>q.label);
-function newAuth(mode,type){ return {mode,step:mode==='signup'&&type?1:0,type:type||'',name:'',phone:'',code:'',sent:false,err:'',
+function newAuth(mode,type){ return {mode,step:mode==='signup'&&type?1:0,type:type||'',name:'',phone:'',email:'',pw:'',code:'',sent:false,err:'',
   quals:['일반'],qform:'book',birth:'',qno:'',qdate:'',qpage:'',qmng:'',qfile:'',
-  store:'',area:AREAS[0],types:['헤어'],own:false,file:'',agree:{tos:false,priv:false,efin:false,mkt:false}}; }
+  store:'',area:'',addr:'',zip:'',types:['헤어'],own:false,file:'',agree:{tos:false,priv:false,efin:false,mkt:false}}; }
 function qualStep(A){ return `<div><h2>국가자격 인증</h2><p class="small muted">원장님과 디자이너 모두 미용사 국가기술자격증이 있어야 가입할 수 있습니다. 입력한 정보는 큐넷(한국산업인력공단) 진위확인으로 대조합니다.</p></div>
   <div class="field"><span class="lbl">보유 자격 종목</span><div class="chips">${QUALS.map(q=>`<button type="button" class="chip" data-aq="${q.k}" aria-pressed="${A.quals.includes(q.k)}">${q.label}</button>`).join('')}</div></div>
   <div class="field"><span class="lbl">자격증 형태</span><div class="seg"><button type="button" data-aqf="book" aria-pressed="${A.qform==='book'}">수첩형</button><button type="button" data-aqf="cert" aria-pressed="${A.qform==='cert'}">상장형</button></div></div>
@@ -29,22 +29,30 @@ function qualStep(A){ return `<div><h2>국가자격 인증</h2><p class="small m
     </div><span class="small muted">수첩형은 기간 제한 없이 진위확인이 가능합니다.</span>`
   :`<div class="field"><label for="a-qmng">자격증 관리번호</label><input id="a-qmng" type="text" value="${esc(A.qmng)}" data-af="qmng"></div>
     <span class="small" style="color:var(--warn)">상장형은 발급일로부터 90일 동안만 온라인 진위확인이 됩니다. 기간이 지났다면 수첩형 정보나 자격증 사본으로 확인합니다.</span>`}
-  <div class="field"><label for="a-qfile">자격증 사본 (선택)</label><input id="a-qfile" type="file" accept="image/*,.pdf" data-af="qfile"><span class="small muted">${A.qfile?esc(A.qfile)+' 선택됨':'프로토타입에서는 저장되지 않습니다.'}</span></div>
+  <div class="field"><label for="a-qfile">자격증 사본 (선택)</label><input id="a-qfile" type="file" accept="image/*,.pdf" data-af="qfile"><span class="small muted">${A.qfile?esc(A.qfile)+' 선택됨':(LIVE?'관리자 검수에만 사용되며 본인과 관리자만 볼 수 있습니다.':'프로토타입에서는 저장되지 않습니다.')}</span></div>
   <p class="note">이름은 본인 확인 단계의 실명(${esc(A.name||'미입력')})과 대조합니다. 확인이 끝날 때까지 공간 공개·예약이 제한됩니다.</p>`; }
-function codeBlock(A){ return `
+/* 운영 모드: 이메일+비밀번호. 휴대폰은 연락처로만 받습니다 (문자 인증은 문자 발송 업체 계약 후 추가) */
+function credBlock(A){ const su=A.mode==='signup'; return `
+  <div class="field"><label for="a-email">이메일</label><input id="a-email" type="email" autocomplete="email" value="${esc(A.email)}" data-af="email"></div>
+  <div class="field"><label for="a-pw">비밀번호${su?' (8자 이상)':''}</label><div class="pwbox"><input id="a-pw" type="password" autocomplete="${su?'new-password':'current-password'}" value="${esc(A.pw)}" data-af="pw"><button type="button" class="pw-eye" data-pweye="a-pw" aria-label="비밀번호 보기" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.600-7 10-7 10 7 10 7-3.600 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path class="slash" d="M4 4l16 16"/></svg></button></div></div>
+  ${su?`<div class="field"><label for="a-phone">휴대폰 번호 (연락용)</label><input id="a-phone" type="text" inputmode="numeric" autocomplete="tel" placeholder="010-0000-0000" value="${esc(A.phone)}" data-af="phone"></div>`:''}`; }
+const nameOk = s => /^[가-힣a-zA-Z][가-힣a-zA-Z\s·.-]{1,19}$/.test(String(s).trim());
+const storeOk = s => { const t=String(s).trim(); return t.length>=2 && t.length<=30 && !/[<>]/.test(t); };
+const emailOk = s => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s).trim());
+function codeBlock(A){ if(LIVE) return credBlock(A); return `
   <div class="field"><label for="a-phone">휴대폰 번호</label>
     <div class="row" style="gap:8px"><input id="a-phone" type="text" inputmode="numeric" autocomplete="tel" placeholder="010-0000-0000" value="${esc(A.phone)}" data-af="phone"><button type="button" class="btn" style="flex:0 0 auto" data-auth="send">${A.sent?'다시 받기':'인증번호 받기'}</button></div></div>
   ${A.sent?`<div class="field"><label for="a-code">인증번호 6자리</label><input id="a-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="${esc(A.code)}" data-af="code"><span class="small muted">프로토타입: 인증번호는 ${DEMO_CODE} 입니다.</span></div>`:''}`; }
 function authView(){
   const A=S.auth;
   if(A.mode==='login') return `<form class="auth panel" id="authform" novalidate>
-    <div><h2>로그인</h2><p class="small muted">가입한 휴대폰 번호로 인증하면 바로 로그인됩니다.</p></div>
+    <div><h2>로그인</h2><p class="small muted">${LIVE?'가입한 이메일과 비밀번호로 로그인합니다.':'가입한 휴대폰 번호로 인증하면 바로 로그인됩니다.'}</p></div>
     ${codeBlock(A)}
     ${A.err?`<p class="err" role="alert">${esc(A.err)}</p>`:''}
     <button class="btn pri" type="submit">로그인</button>
-    <button class="btn kakao" type="button" data-auth="kakao">카카오로 시작하기</button>
+    ${LIVE?'':`<button class="btn kakao" type="button" data-auth="kakao">카카오로 시작하기</button>
     <div class="sep"></div>
-    <div class="stack" style="gap:8px"><span class="lbl">시연 계정으로 바로 보기</span><div class="row" style="gap:8px"><button type="button" class="btn sm" data-demo="01011112222">원장님 계정</button><button type="button" class="btn sm" data-demo="01033334444">디자이너 계정</button></div></div>
+    <div class="stack" style="gap:8px"><span class="lbl">시연 계정으로 바로 보기</span><div class="row" style="gap:8px"><button type="button" class="btn sm" data-demo="01011112222">원장님 계정</button><button type="button" class="btn sm" data-demo="01033334444">디자이너 계정</button></div></div>`}
     <p class="small muted">아직 회원이 아니신가요? <button type="button" class="btn ghost sm" style="padding:0;text-decoration:underline" data-auth="signup">회원가입</button></p>
     <button type="button" class="btn ghost sm" data-auth="cancel">← 돌아가기</button>
   </form>`;
@@ -60,14 +68,14 @@ function authView(){
   if(st===2) body = qualStep(A) + nav('다음');
   if(st===3) body = A.type==='host' ? `<div><h2>매장 정보</h2><p class="small muted">영업신고증은 관리자 검수 후 공간 공개에 쓰입니다.</p></div>
     <div class="field"><label for="a-store">매장 이름</label><input id="a-store" type="text" value="${esc(A.store)}" data-af="store"></div>
-    <div class="field"><label for="a-area">지역</label><select id="a-area" data-af="area">${AREAS.map(a=>`<option ${a===A.area?'selected':''}>${a}</option>`).join('')}</select></div>
+    <div class="field"><span class="lbl">매장 주소</span><div class="row" style="gap:8px;flex-wrap:nowrap"><input type="text" readonly value="${esc(A.addr?(A.zip?'('+A.zip+') ':'')+A.addr:'')}" placeholder="주소 찾기를 눌러 주세요" aria-label="매장 주소"><button type="button" class="btn" style="flex:0 0 auto" data-addr="auth">주소 찾기</button></div>${A.area?`<span class="small muted">지역: <b>${esc(A.area)}</b> (주소에서 자동 적용)</span>`:'<span class="small muted">우편번호 검색으로 시·구가 자동 입력됩니다.</span>'}</div>
     <div class="field"><span class="lbl">영업신고 업종</span><div class="chips">${TYPES.map(t=>`<button type="button" class="chip" data-alic="types" data-v="${t}" aria-pressed="${A.types.includes(t)}">${t}</button>`).join('')}</div>
       <span class="small muted">보유 자격: ${qualLabels(A.quals).join(', ')||'없음'} → 신고 업종은 보유 자격 범위 안이어야 합니다.</span></div>
-    <div class="field"><label for="a-file">미용업 영업신고증</label><input id="a-file" type="file" accept="image/*,.pdf" data-af="file"><span class="small muted">${A.file?esc(A.file)+' 선택됨':'나중에 올려도 됩니다. 프로토타입에서는 저장되지 않습니다.'}</span></div>${nav('다음')}`
+    <div class="field"><label for="a-file">미용업 영업신고증</label><input id="a-file" type="file" accept="image/*,.pdf" data-af="file"><span class="small muted">${A.file?esc(A.file)+' 선택됨':(LIVE?'가입 후 관리자 검수에 쓰입니다. 본인과 관리자만 볼 수 있습니다.':'나중에 올려도 됩니다. 프로토타입에서는 저장되지 않습니다.')}</span></div>${nav('다음')}`
   : `<div><h2>활동 정보</h2><p class="small muted">시술 가능한 업종은 보유 자격으로 정해집니다.</p></div>
     <div class="field"><span class="lbl">시술 가능 업종</span><div class="chips">${qualTypes(A.quals).map(t=>`<span class="pill p-acc">${t}</span>`).join('')}</div></div>
     <label class="check"><input id="a-own" type="checkbox" ${A.own?'checked':''} data-af="own"> 본인 명의 미용업 영업신고를 했어요 (각자 영업신고 매장 이용 시 필요)</label>
-    ${A.own?`<div class="field"><label for="a-file">본인 영업신고증</label><input id="a-file" type="file" accept="image/*,.pdf" data-af="file"><span class="small muted">${A.file?esc(A.file)+' 선택됨':'프로토타입에서는 저장되지 않습니다.'}</span></div>`:''}${nav('다음')}`;
+    ${A.own?`<div class="field"><label for="a-file">본인 영업신고증</label><input id="a-file" type="file" accept="image/*,.pdf" data-af="file"><span class="small muted">${A.file?esc(A.file)+' 선택됨':(LIVE?'관리자 검수에만 사용되며 본인과 관리자만 볼 수 있습니다.':'프로토타입에서는 저장되지 않습니다.')}</span></div>`:''}${nav('다음')}`;
   if(st===4){ const g=A.agree, all=g.tos&&g.priv&&g.efin&&g.mkt;
     body=`<div><h2>약관 동의</h2></div>
     <label class="check" style="font-weight:700;font-size:.95rem"><input id="ag-all" type="checkbox" ${all?'checked':''} data-ag="all"> 전체 동의</label>
@@ -76,7 +84,7 @@ function authView(){
     <label class="check"><input id="ag-priv" type="checkbox" ${g.priv?'checked':''} data-ag="priv"> [필수] 개인정보 수집·이용</label>
     <label class="check"><input id="ag-efin" type="checkbox" ${g.efin?'checked':''} data-ag="efin"> [필수] 전자금융거래 이용약관</label>
     <label class="check"><input id="ag-mkt" type="checkbox" ${g.mkt?'checked':''} data-ag="mkt"> [선택] 혜택·이벤트 알림 수신</label>
-    <p class="small muted">약관 본문은 정식 버전에서 법률 검토 후 연결합니다.</p>${nav('가입 완료')}`; }
+    <p class="small muted"><a href="index.html#intro-terms" target="_blank" rel="noopener">이용약관</a> · <a href="index.html#intro-privacy" target="_blank" rel="noopener">개인정보처리방침</a> 전문 보기 (새 창)</p>${nav('가입 완료')}`; }
   if(st===5) body=`<div class="stack" style="gap:8px"><span class="pill p-ok" style="justify-self:start">가입 완료</span><h2>${esc(A.name)}님, 환영합니다</h2>
     <p class="muted">국가자격 진위확인${A.type==='host'?'과 영업신고증 검수가':'이'} 끝나면 ${A.type==='host'?'공간이 공개됩니다. 지금 공간을 등록해 두세요.':'예약할 수 있습니다. 먼저 공간을 둘러보세요.'}</p>
     <div class="sum small"><div><span>제출 자격</span><span>${qualLabels(A.quals).join(', ')}</span></div><div><span>진위확인 상태</span><span class="pill p-warn">검수 대기</span></div></div></div>
@@ -85,22 +93,24 @@ function authView(){
 }
 function authSubmit(){
   const A=S.auth; A.err='';
-  const codeErr = () => !phoneOk(A.phone) ? '휴대폰 번호를 확인해 주세요. 예: 010-1234-5678' : !A.sent ? '인증번호 받기를 먼저 눌러 주세요.' : A.code!==DEMO_CODE ? '인증번호가 맞지 않습니다. 다시 확인해 주세요.' : '';
+  const codeErr = () => LIVE ? (!emailOk(A.email)?'이메일 주소를 확인해 주세요.':A.pw.length<8?'비밀번호는 8자 이상이어야 합니다.':(A.mode==='signup'&&!phoneOk(A.phone))?'휴대폰 번호를 확인해 주세요. 예: 010-1234-5678':'') : !phoneOk(A.phone) ? '휴대폰 번호를 확인해 주세요. 예: 010-1234-5678' : !A.sent ? '인증번호 받기를 먼저 눌러 주세요.' : A.code!==DEMO_CODE ? '인증번호가 맞지 않습니다. 다시 확인해 주세요.' : '';
   if(A.mode==='login'){
     A.err = codeErr(); if(A.err) return render();
+    if(LIVE) return liveLogin(A).catch(e=>{ A.err=e.message; render(); });
     const acc = ACCOUNTS.find(a=>a.phone===digits(A.phone));
     if(!acc){ A.err='가입되지 않은 번호입니다. 회원가입을 먼저 해주세요.'; return render(); }
     return loginAs(acc);
   }
   if(A.step===0 && !A.type) A.err='회원 유형을 골라 주세요.';
-  if(A.step===1) A.err = !A.name.trim() ? '이름을 입력해 주세요.' : codeErr() || (ACCOUNTS.some(a=>a.phone===digits(A.phone)) ? '이미 가입된 번호입니다. 로그인해 주세요.' : '');
+  if(A.step===1) A.err = !nameOk(A.name) ? '이름은 한글 또는 영문 2~20자로 입력해 주세요.' : codeErr() || (!LIVE && ACCOUNTS.some(a=>a.phone===digits(A.phone)) ? '이미 가입된 번호입니다. 로그인해 주세요.' : '');
   if(A.step===2) A.err = !A.quals.length ? '보유 자격 종목을 하나 이상 골라 주세요.'
     : A.qform==='book' ? (!/^\d{8}$/.test(A.birth)?'생년월일 8자리를 숫자로 입력해 주세요. 예: 19940512':!A.qno.trim()?'자격증 번호를 입력해 주세요.':!A.qdate?'발급일을 입력해 주세요.':!A.qpage.trim()?'자격증 내지번호를 입력해 주세요.':'')
     : (!A.qmng.trim()?'자격증 관리번호를 입력해 주세요.':'');
   if(A.step===3 && A.type==='host'){ const over=A.types.filter(t=>!PENDING_TYPES.includes(t)&&!qualTypes(A.quals).includes(t));
-    A.err = !A.store.trim()?'매장 이름을 입력해 주세요.':!A.types.length?'영업신고 업종을 하나 이상 골라 주세요.':over.length?`${over.join(', ')} 업종은 보유 자격에 없습니다. 해당 자격을 추가하거나 업종을 빼 주세요.`:''; }
+    A.err = !storeOk(A.store)?'매장 이름을 2~30자로 입력해 주세요. (< > 문자는 사용할 수 없습니다)':!A.area?'매장 주소를 검색해 주세요.':!A.types.length?'영업신고 업종을 하나 이상 골라 주세요.':over.length?`${over.join(', ')} 업종은 보유 자격에 없습니다. 해당 자격을 추가하거나 업종을 빼 주세요.`:''; }
   if(A.step===4 && !(A.agree.tos&&A.agree.priv&&A.agree.efin)) A.err='필수 약관에 모두 동의해 주세요.';
   if(A.err) return render();
+  if(A.step===4 && LIVE) return liveSignup(A).catch(e=>{ A.err=e.message; render(); });
   if(A.step===4){
     const qdoc = `국가기술자격 ${qualLabels(A.quals).join('·')} (${A.qform==='book'?'수첩형 · 번호 '+A.qno.trim():'상장형 · 관리번호 '+A.qmng.trim()})`;
     ACCOUNTS.push({phone:digits(A.phone),name:A.name.trim(),type:A.type});
@@ -116,3 +126,11 @@ function loginAs(acc){
   if(acc.type==='guest' && acc.phone==='01033334444') Object.assign(ME_GUEST,{name:'김지원',licenses:['헤어','속눈썹','메이크업'],ownReport:false,verified:true});
   S.role=acc.type; S.tab[acc.type]= acc.type==='host'?'dash':'search'; render(); scrollTo(0,0); toast(`${acc.name}님, 로그인했습니다`);
 }
+
+/* 비밀번호 보기/숨기기: 입력 상태를 건드리지 않고 칸의 type 만 바꿉니다 */
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-pweye]'); if(!b) return;
+  const i=document.getElementById(b.dataset.pweye); if(!i) return;
+  const show=i.type==='password'; i.type=show?'text':'password';
+  b.setAttribute('aria-pressed',String(show)); b.setAttribute('aria-label',show?'비밀번호 숨기기':'비밀번호 보기'); i.focus();
+});

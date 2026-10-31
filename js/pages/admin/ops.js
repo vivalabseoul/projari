@@ -2,7 +2,7 @@ function adminOps(){
   const all=bookings.filter(b=>b.status!=='거절'); const g=all.reduce((a,b)=>a+amountOf(b),0), f=all.reduce((a,b)=>a+feeOf(b),0);
   const byType=TYPES.map(t=>({t,n:spaces.filter(s=>s.status==='공개'&&s.types.includes(t)).length}));
   const max=Math.max(...byType.map(x=>x.n),1);
-  return `<div class="head"><h2>운영 현황</h2><p class="small muted">예시 데이터 기준</p></div>
+  return `<div class="head"><h2>운영 현황</h2><p class="small muted">${LIVE?'실제 데이터 기준':'예시 데이터 기준'}</p></div>
   <div class="grid3">
     <div class="panel kpi"><span class="lbl">총 거래액</span><span class="v num">${won(g)}</span></div>
     <div class="panel kpi"><span class="lbl">플랫폼 수수료 수익</span><span class="v acc num">${won(f)}</span><span class="small muted num">평균 ${g?(f/g*100).toFixed(1):0}%</span></div>

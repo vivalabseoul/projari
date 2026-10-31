@@ -1,5 +1,6 @@
 /* ===== 예시 데이터 (실제 매장 아님) ===== */
-const ME_HOST = '결 헤어 스튜디오';
+let ME_HOST = '결 헤어 스튜디오';
+let busy = [];   /* 운영 모드: 다른 사람 예약은 이름 없이 '시간대 점유'만 받아 예약 가능 여부 계산에 씁니다 */
 const ME_GUEST = { name:'김지원', licenses:['헤어','속눈썹','메이크업'], ownReport:false, verified:true };
 const DEMO_CODE = '123456';   // 프로토타입 인증번호
 let spaces = [
@@ -38,7 +39,8 @@ const accessOk = r => r.acc24 || toMin(r.accTo)-toMin(r.accFrom) >= r.dayHours*6
 const dayNo = d => Math.round(Date.parse(d+'T00:00:00Z')/86400000);
 function overlapCount(spaceId,start,qty,time,hours,exceptId){
   const iv=[]; for(let i=0;i<qty;i++){ const a=(dayNo(start)+i)*1440+toMin(time); iv.push([a,a+hours*60]); }
-  return bookings.filter(b=>b.spaceId===spaceId&&b.unit==='day'&&b.id!==exceptId&&(b.status==='요청'||b.status==='확정')).filter(b=>{
+  const all=[...bookings,...busy.filter(x=>!bookings.some(b=>b.id===x.id))];
+  return all.filter(b=>b.spaceId===spaceId&&b.unit==='day'&&b.id!==exceptId&&(b.status==='요청'||b.status==='확정')).filter(b=>{
     for(let i=0;i<b.qty;i++){ const a=(dayNo(b.start)+i)*1440+toMin(b.time); const e=a+sp(b.spaceId).dayHours*60; if(iv.some(([x,y])=>x<e&&a<y)) return true; } return false; }).length;
 }
 /* 샵인샵 월세 계약: 프로체어가 매월 자동결제 → 수수료 차감 → 호스트 정산 */

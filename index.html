@@ -4,12 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>프로체어</title>
+<meta name="description" content="국가자격을 확인한 원장님과 디자이너를 연결하는 미용 샵인샵 공간 임대 플랫폼. 일·월·년 단위로 빈 의자를 찾고 빌려주세요.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ko_KR">
+<meta property="og:site_name" content="프로체어">
+<meta property="og:title" content="프로체어 - 검증된 프로의 빈 자리, 오늘 바로 찾기">
+<meta property="og:description" content="국가자격을 확인한 원장님과 디자이너를 연결하는 미용 샵인샵 공간 임대 플랫폼">
+<meta name="theme-color" content="#4a90e2">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234a90e2'/%3E%3Cpath d='M11 7h10v8H11zM8 18h16v3H8zM16 21v4M11 27h10' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<h1 class="vh">프로체어 - 미용인을 위한 샵인샵 공간 임대 플랫폼</h1>
 <header class="top">
   <div class="adbar" role="region" aria-label="공지 및 광고">
     <div class="adbar-in">
@@ -39,6 +48,9 @@
   <button data-go="intro:my"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c1-4 4-6 8-6s7 2 8 6"/></svg>마이</button>
 </nav>
 <div id="layer"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script src="js/env.js"></script>
 <script src="js/config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/state.js"></script>
@@ -50,10 +62,16 @@
 <script src="js/pages/admin/verify.js"></script>
 <script src="js/pages/admin/payments.js"></script>
 <script src="js/pages/admin/ops.js"></script>
+<script src="js/pages/admin/promo.js"></script>
+<script src="js/pages/admin/content.js"></script>
+<script src="js/pages/admin/shell.js"></script>
 <script src="js/pages/home.js"></script>
 <script src="js/pages/hostcenter.js"></script>
 <script src="js/pages/guide.js"></script>
+<script src="js/pages/legal.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/db.js"></script>
+<script src="js/site.js"></script>
 <script src="js/payment.js"></script>
 <script src="js/events.js"></script>
 <script src="js/photos.js"></script>
